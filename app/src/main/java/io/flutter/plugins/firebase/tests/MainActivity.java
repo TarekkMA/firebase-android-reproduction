@@ -1,17 +1,16 @@
 package io.flutter.plugins.firebase.tests;
 
+import android.nfc.Tag;
 import android.os.Bundle;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.View;
 
-import androidx.core.view.WindowCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -23,14 +22,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
-    private final String TAG = "YYYYYYYYY";
+
     private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
+    private final String TAG = "firebase-auth-test";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        io.flutter.plugins.firebase.tests.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         FirebaseApp.initializeApp(this);
         setContentView(binding.getRoot());
 
@@ -40,22 +39,20 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FirebaseApp app = FirebaseApp.getInstance();
-//                FirebaseStorage storage = FirebaseStorage.getInstance(app, "gs://flutterfire-e2e-tests-two");
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                storage.useEmulator("10.0.2.2", 9199);
-                Log.d(TAG, "onClick: ");
-                storage.getReference().child("flutter-tests").child("foo.txt").putBytes(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Log.d(TAG, "Success");
-                    } else {
-                        Log.d(TAG, "Failure");
-                    }
-                });
-            }
+        binding.fab.setOnClickListener(view -> {
+            FirebaseApp app = FirebaseApp.getInstance();
+            FirebaseAuth auth = FirebaseAuth.getInstance(app);
+
+            auth.setLanguageCode("en-US");
+
+            auth.createUserWithEmailAndPassword("test-email@testemail.com", "qwerty123").addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "User created successfully");
+
+                } else {
+                    Log.d(TAG, "User creation failed");
+                }
+            });
         });
     }
 
