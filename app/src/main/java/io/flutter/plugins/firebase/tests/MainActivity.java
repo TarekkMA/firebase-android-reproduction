@@ -4,7 +4,7 @@ import android.nfc.Tag;
 import android.os.Bundle;
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -21,10 +21,13 @@ import io.flutter.plugins.firebase.tests.databinding.ActivityMainBinding;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
     private final String TAG = "firebase-auth-test";
+    private Double readValue = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,21 +42,41 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        binding.fab.setOnClickListener(view -> {
-            FirebaseApp app = FirebaseApp.getInstance();
-            FirebaseAuth auth = FirebaseAuth.getInstance(app);
-
-            auth.setLanguageCode("en-US");
-
-            auth.createUserWithEmailAndPassword("test-email@testemail.com", "qwerty123").addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    Log.d(TAG, "User created successfully");
-
-                } else {
-                    Log.d(TAG, "User creation failed");
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("flutter-tests").document("testv").addSnapshotListener(
+                (value, error) -> {
+                    String sval = "";
+                    if (value.contains("v")) {
+                        readValue = 0.0;
+                        sval = "0";
+                    } else {
+                        readValue = value.getDouble("v");
+                        sval = readValue.toString();
+                    }
+                    binding.textval.setText(sval);
                 }
-            });
+        );
+
+        binding.fab.setOnClickListener(view -> {
+            increment(-1);
+            FirebaseFirestore.getInstance().disableNetwork();
+            increment(1);
+            FirebaseFirestore.getInstance().enableNetwork();
         });
+    }
+
+    private void increment(int i) {
+        Log.d("TEST", "increment " + i +" START");
+        HashMap<String, Object> newObj = new HashMap<>();
+        newObj.put("v", readValue + i);
+        FirebaseFirestore
+                .getInstance()
+                .collection("flutter-tests")
+                .document("testv")
+                .update(newObj)
+                .addOnSuccessListener(command -> {
+                    Log.d("TEST", "increment " + i +" DONE");
+                });
     }
 
     @Override
