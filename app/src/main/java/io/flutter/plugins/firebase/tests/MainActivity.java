@@ -4,6 +4,7 @@ import android.nfc.Tag;
 import android.os.Bundle;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AdditionalUserInfo;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -47,12 +48,12 @@ public class MainActivity extends AppCompatActivity {
             auth.signInWithEmailAndPassword("test@test2.com", "123456789").addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     Log.d(TAG, "Okay");
-                    AuthCredential credential = task.getResult().getCredential();
-                    if (credential == null) {
-                        Log.d(TAG, "credential is null");
+                    AdditionalUserInfo additionalUserInfo = task.getResult().getAdditionalUserInfo();
+                    if (additionalUserInfo == null) {
+                        Log.d(TAG, "additionalUserInfo is null");
                         return;
                     }
-                    String provider = credential.getProvider();
+                    String provider = additionalUserInfo.getProviderId();
                     Log.d(TAG, "Provider:" + provider);
                 } else {
                     Log.d(TAG, "failed");
