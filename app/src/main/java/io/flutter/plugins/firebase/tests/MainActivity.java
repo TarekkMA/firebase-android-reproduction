@@ -4,6 +4,7 @@ import android.nfc.Tag;
 import android.os.Bundle;
 
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,14 +44,18 @@ public class MainActivity extends AppCompatActivity {
             FirebaseApp app = FirebaseApp.getInstance();
             FirebaseAuth auth = FirebaseAuth.getInstance(app);
 
-            auth.setLanguageCode("en-US");
-
-            auth.createUserWithEmailAndPassword("test-email@testemail.com", "qwerty123").addOnCompleteListener(task -> {
+            auth.signInWithEmailAndPassword("test@test2.com", "123456789").addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Log.d(TAG, "User created successfully");
-
+                    Log.d(TAG, "Okay");
+                    AuthCredential credential = task.getResult().getCredential();
+                    if (credential == null) {
+                        Log.d(TAG, "credential is null");
+                        return;
+                    }
+                    String provider = credential.getProvider();
+                    Log.d(TAG, "Provider:" + provider);
                 } else {
-                    Log.d(TAG, "User creation failed");
+                    Log.d(TAG, "failed");
                 }
             });
         });
